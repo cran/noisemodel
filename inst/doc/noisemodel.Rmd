@@ -1,0 +1,156 @@
+---
+title: "Introduction to the noisemodel package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to the noisemodel package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+getInfo <- function(what = "Suggests") {
+  text <- packageDescription("noisemodel")[what][[1]]
+  text <- gsub("\n", ", ", text, fixed = TRUE)
+  text <- gsub(">=", "$\\\\ge$", text, fixed = TRUE)
+  eachPkg <- strsplit(text, ", ", fixed = TRUE)[[1]]
+  eachPkg <- gsub(",", "", eachPkg, fixed = TRUE)
+  #out <- paste("\\\**", eachPkg[order(tolower(eachPkg))], "}", sep = "")
+  #paste(out, collapse = ", ")
+  length(eachPkg)
+}
+```
+
+<p style="text-align:justify;">
+The **noisemodel** package contains the first extensive implementation of noise models for classification datasets. It provides 72 noise models found in the specialized literature that allow errors to be introduced in different ways in class labels, attributes or both in combination. Each of them is properly documented and referenced, unifying their results through a specific S3 class, which benefits from customized `print`, `summary` and `plot` methods.
+</p>
+
+## Installation
+<p style="text-align:justify;">
+The **noisemodel** package can be installed in R from **CRAN** servers using the command:
+</p>
+```{r install1}
+# install.packages("noisemodel")
+```
+<p style="text-align:justify;">
+This command installs all the dependencies of the package that are necessary for the operation of the noise models. In order to access all the functions of the package, it is necessary to use the R command:
+</p>
+```{r install2}
+library(noisemodel)
+```
+
+## Documentation
+<p style="text-align:justify;">
+All the information corresponding to each noise model can be consulted from the **CRAN** website. Additionally, the `help()` command can be used. For example, in order to check the documentation of the <i>Symmetric uniform label noise</i> model, we can use the command:
+</p>
+```{r help}
+# help(sym_uni_ln)
+```
+
+## Usage of noise models
+<p style="text-align:justify;">
+For introducing noise in a dataset, each noise model in the **noisemodel** package provides two standard ways of use:
+</p>
+<p style="text-align:justify;">
+<ul>
+  <li><i>Default method</i>. It receives a data frame with the input attributes in the <i>x</i> argument, whereas the output variable is received through the <i>y</i> argument (a factor vector).</li>
+  <li><i>Class formula method</i>. This method allows passing the whole data frame (attributes and response variable) in the <i>data</i> argument. In addition, the attributes along with the output label must be indicated in the <i>formula</i> argument.</li>
+</ul>
+</p>
+<p style="text-align:justify;">
+An example on how to use these two methods for introducing noise in the `iris2D` dataset with the `sym_uni_ln` model is shown below:
+</p>
+```{r example 1}
+# load the dataset
+data(iris2D)
+
+# usage of the default method
+set.seed(9)
+outdef <- sym_uni_ln(x = iris2D[,-ncol(iris2D)], y = iris2D[,ncol(iris2D)], level = 0.1)
+
+# show results
+summary(outdef, showid = TRUE)
+plot(outdef)
+
+# usage of the method for class formula
+set.seed(9)
+outfrm <- sym_uni_ln(formula = Species ~ ., data = iris2D, level = 0.1)
+
+# check the match of noisy indices
+identical(outdef$idnoise, outfrm$idnoise)
+```
+<p style="text-align:justify;">
+Note that, the `$` operator is used to access the elements returned by the noise model in the objects `outdef` and `outfrm`.
+</p>
+
+## Output values
+<p style="text-align:justify;">
+All noise models return an object of class `ndmodel`. It is designed to unify the output value of the methods included in the **noisemodel** package. The class `ndmodel` is a list of elements with the most relevant information of the noise introduction process:
+</p>
+
+<ul>
+  <li>`xnoise` a data frame with the noisy input attributes.</li>
+  <li>`ynoise` a factor vector with the noisy output class.</li>
+  <li>`numnoise` an integer vector with the amount of noisy samples per class.</li>
+  <li>`idnoise` an integer vector list with the indices of noisy samples.</li>
+  <li>`numclean` an integer vector with the amount of clean samples per class.</li>
+  <li>`idclean` an integer vector list with the indices of clean samples.</li>
+  <li>`distr` an integer vector with the samples per class in the original data.</li>
+  <li>`model` the full name of the noise introduction model used.</li>
+  <li>`param` a list of the argument values.</li>
+  <li>`call` the function call.</li>
+</ul>
+
+As an example, the structure of the `ndmodel` object returned using the `sym_uni_ln` model is shown below:
+
+```{r example 2}
+str(outdef)
+```
+<p style="text-align:justify;">
+In order to display the results of the class `ndmodel` in a friendly way in the R console, specific `print`, `summary` and `plot` functions are implemented. The `print` function presents the basic information about the noise introduction process contained in an object of class `ndmodel`:
+</p>
+
+```{r example 3}
+print(outdef)
+```
+<p style="text-align:justify;">
+The information offered by `print` is as follows:
+<ul>
+  <li>the name of the noise introduction model.</li>
+  <li>the parameters associated with the noise model.</li>
+  <li>the number of noisy and clean samples in the dataset.</li>
+</ul>
+</p>
+<p style="text-align:justify;">
+On the other hand, the `summary` function displays a summary containing information about the noise introduction process contained in an object of class `ndmodel`, with other additional details. This function can be called by typing the following R command:
+</p>
+```{r example 4}
+summary(outdef, showid = TRUE)
+```
+<p style="text-align:justify;">
+The information offered by this function is as follows:
+</p>
+<p style="text-align:justify;">
+<ul>
+  <li>the function call.</li>
+  <li>the name of the noise introduction model.</li>
+  <li>the parameters associated with the noise model.</li>
+  <li>the number of noisy and clean samples in the dataset.</li>
+  <li>the number of noisy samples per class/attribute.</li>
+  <li>the number of clean samples per class/attribute.</li>
+  <li>the indices of the noisy samples (if `showid = TRUE`).</li>
+</ul>
+</p>
+<p style="text-align:justify;">
+Finally, the `plot` function displays a representation of the dataset contained in an object of class `ndmodel` after the application of a noise introduction model.
+</p>
+```{r example 5}
+plot(outdef)
+```
+<p style="text-align:justify;">
+This function performs a two-dimensional representation using the **ggplot2** package of the dataset contained in the object *x* of class `ndmodel`. Each of the classes in the dataset (available in `x$ynoise`) is represented by a different color.
+</p>

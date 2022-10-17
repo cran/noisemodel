@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Introduction to the noisemodel package</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to the noisemodel package</h1>
+
+
+
+<p style="text-align:justify;">
+The <strong>noisemodel</strong> package contains the first extensive
+implementation of noise models for classification datasets. It provides
+72 noise models found in the specialized literature that allow errors to
+be introduced in different ways in class labels, attributes or both in
+combination. Each of them is properly documented and referenced,
+unifying their results through a specific S3 class, which benefits from
+customized <code>print</code>, <code>summary</code> and
+<code>plot</code> methods.
+</p>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p style="text-align:justify;">
+The <strong>noisemodel</strong> package can be installed in R from
+<strong>CRAN</strong> servers using the command:
+</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;noisemodel&quot;)</span></span></code></pre></div>
+<p style="text-align:justify;">
+This command installs all the dependencies of the package that are
+necessary for the operation of the noise models. In order to access all
+the functions of the package, it is necessary to use the R command:
+</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(noisemodel)</span></code></pre></div>
+</div>
+<div id="documentation" class="section level2">
+<h2>Documentation</h2>
+<p style="text-align:justify;">
+All the information corresponding to each noise model can be consulted
+from the <strong>CRAN</strong> website. Additionally, the
+<code>help()</code> command can be used. For example, in order to check
+the documentation of the <i>Symmetric uniform label noise</i> model, we
+can use the command:
+</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># help(sym_uni_ln)</span></span></code></pre></div>
+</div>
+<div id="usage-of-noise-models" class="section level2">
+<h2>Usage of noise models</h2>
+<p style="text-align:justify;">
+For introducing noise in a dataset, each noise model in the
+<strong>noisemodel</strong> package provides two standard ways of use:
+</p>
+<p style="text-align:justify;">
+<ul>
+<li>
+<i>Default method</i>. It receives a data frame with the input
+attributes in the <i>x</i> argument, whereas the output variable is
+received through the <i>y</i> argument (a factor vector).
+</li>
+<li>
+<i>Class formula method</i>. This method allows passing the whole data
+frame (attributes and response variable) in the <i>data</i> argument. In
+addition, the attributes along with the output label must be indicated
+in the <i>formula</i> argument.
+</li>
+</ul>
+</p>
+<p style="text-align:justify;">
+An example on how to use these two methods for introducing noise in the
+<code>iris2D</code> dataset with the <code>sym_uni_ln</code> model is
+shown below:
+</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load the dataset</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(iris2D)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># usage of the default method</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">9</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>outdef <span class="ot">&lt;-</span> <span class="fu">sym_uni_ln</span>(<span class="at">x =</span> iris2D[,<span class="sc">-</span><span class="fu">ncol</span>(iris2D)], <span class="at">y =</span> iris2D[,<span class="fu">ncol</span>(iris2D)], <span class="at">level =</span> <span class="fl">0.1</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># show results</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(outdef, <span class="at">showid =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ########################################################</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Noise introduction process: Summary</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ########################################################</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Original call:</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; sym_uni_ln(x = iris2D[, -ncol(iris2D)], y = iris2D[, ncol(iris2D)], level = 0.1)</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Noise model: </span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Symmetric uniform label noise</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Parameters:</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - level = 0.1</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - sortid = TRUE</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Number of noisy and clean samples:</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Noisy samples: 10/101 (9.90%)</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Clean samples: 91/101 (90.10%)</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Number of noisy samples per class label:</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class setosa: 3/22 (13.64%)</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class versicolor: 4/35 (11.43%)</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class virginica: 3/44 (6.82%)</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Number of clean samples per class label:</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class setosa: 19/22 (86.36%)</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class versicolor: 31/35 (88.57%)</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class virginica: 41/44 (93.18%)</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Indices of noisy samples:</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Output class: 3, 6, 12, 24, 30, 48, 53, 59, 83, 101</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(outdef)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># usage of the method for class formula</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">9</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>outfrm <span class="ot">&lt;-</span> <span class="fu">sym_uni_ln</span>(<span class="at">formula =</span> Species <span class="sc">~</span> ., <span class="at">data =</span> iris2D, <span class="at">level =</span> <span class="fl">0.1</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># check the match of noisy indices</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(outdef<span class="sc">$</span>idnoise, outfrm<span class="sc">$</span>idnoise)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p style="text-align:justify;">
+Note that, the <code>$</code> operator is used to access the elements
+returned by the noise model in the objects <code>outdef</code> and
+<code>outfrm</code>.
+</p>
+</div>
+<div id="output-values" class="section level2">
+<h2>Output values</h2>
+<p style="text-align:justify;">
+All noise models return an object of class <code>ndmodel</code>. It is
+designed to unify the output value of the methods included in the
+<strong>noisemodel</strong> package. The class <code>ndmodel</code> is a
+list of elements with the most relevant information of the noise
+introduction process:
+</p>
+<ul>
+<li>
+<code>xnoise</code> a data frame with the noisy input attributes.
+</li>
+<li>
+<code>ynoise</code> a factor vector with the noisy output class.
+</li>
+<li>
+<code>numnoise</code> an integer vector with the amount of noisy samples
+per class.
+</li>
+<li>
+<code>idnoise</code> an integer vector list with the indices of noisy
+samples.
+</li>
+<li>
+<code>numclean</code> an integer vector with the amount of clean samples
+per class.
+</li>
+<li>
+<code>idclean</code> an integer vector list with the indices of clean
+samples.
+</li>
+<li>
+<code>distr</code> an integer vector with the samples per class in the
+original data.
+</li>
+<li>
+<code>model</code> the full name of the noise introduction model used.
+</li>
+<li>
+<code>param</code> a list of the argument values.
+</li>
+<li>
+<code>call</code> the function call.
+</li>
+</ul>
+<p>As an example, the structure of the <code>ndmodel</code> object
+returned using the <code>sym_uni_ln</code> model is shown below:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(outdef)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; List of 10</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ xnoise  :&#39;data.frame&#39;:    101 obs. of  2 variables:</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ Petal.Length: num [1:101] 1.4 1.3 1.5 1.7 1.4 1.5 1.6 1.4 1.1 1.2 ...</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ Petal.Width : num [1:101] 0.2 0.2 0.2 0.4 0.3 0.1 0.2 0.1 0.1 0.2 ...</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ ynoise  : Factor w/ 3 levels &quot;setosa&quot;,&quot;versicolor&quot;,..: 1 1 2 1 1 2 1 1 1 1 ...</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ numnoise: Named int [1:3] 3 4 3</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;setosa&quot; &quot;versicolor&quot; &quot;virginica&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ idnoise :List of 1</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ : int [1:10] 3 6 12 24 30 48 53 59 83 101</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ numclean: Named int [1:3] 19 31 41</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;setosa&quot; &quot;versicolor&quot; &quot;virginica&quot;</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ idclean :List of 1</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ : int [1:91] 1 2 4 5 7 8 9 10 11 13 ...</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ distr   : Named int [1:3] 22 35 44</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;setosa&quot; &quot;versicolor&quot; &quot;virginica&quot;</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ model   : chr &quot;Symmetric uniform label noise&quot;</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ param   :List of 2</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ level : num 0.1</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ..$ sortid: logi TRUE</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  $ call    : language sym_uni_ln(x = iris2D[, -ncol(iris2D)], y = iris2D[, ncol(iris2D)], level = 0.1)</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  - attr(*, &quot;class&quot;)= chr &quot;ndmodel&quot;</span></span></code></pre></div>
+<p style="text-align:justify;">
+In order to display the results of the class <code>ndmodel</code> in a
+friendly way in the R console, specific <code>print</code>,
+<code>summary</code> and <code>plot</code> functions are implemented.
+The <code>print</code> function presents the basic information about the
+noise introduction process contained in an object of class
+<code>ndmodel</code>:
+</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(outdef)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Noise model: </span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Symmetric uniform label noise</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Parameters:</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - level = 0.1</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - sortid = TRUE</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Number of noisy and clean samples:</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Noisy samples: 10/101 (9.90%)</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Clean samples: 91/101 (90.10%)</span></span></code></pre></div>
+<p style="text-align:justify;">
+The information offered by <code>print</code> is as follows:
+<ul>
+<li>
+the name of the noise introduction model.
+</li>
+<li>
+the parameters associated with the noise model.
+</li>
+<li>
+the number of noisy and clean samples in the dataset.
+</li>
+</ul>
+</p>
+<p style="text-align:justify;">
+On the other hand, the <code>summary</code> function displays a summary
+containing information about the noise introduction process contained in
+an object of class <code>ndmodel</code>, with other additional details.
+This function can be called by typing the following R command:
+</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(outdef, <span class="at">showid =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ########################################################</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Noise introduction process: Summary</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ########################################################</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Original call:</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; sym_uni_ln(x = iris2D[, -ncol(iris2D)], y = iris2D[, ncol(iris2D)], level = 0.1)</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Noise model: </span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Symmetric uniform label noise</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Parameters:</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - level = 0.1</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - sortid = TRUE</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Number of noisy and clean samples:</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Noisy samples: 10/101 (9.90%)</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Clean samples: 91/101 (90.10%)</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Number of noisy samples per class label:</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class setosa: 3/22 (13.64%)</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class versicolor: 4/35 (11.43%)</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class virginica: 3/44 (6.82%)</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Number of clean samples per class label:</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class setosa: 19/22 (86.36%)</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class versicolor: 31/35 (88.57%)</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Class virginica: 41/44 (93.18%)</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Indices of noisy samples:</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; - Output class: 3, 6, 12, 24, 30, 48, 53, 59, 83, 101</span></span></code></pre></div>
+<p style="text-align:justify;">
+The information offered by this function is as follows:
+</p>
+<p style="text-align:justify;">
+<ul>
+<li>
+the function call.
+</li>
+<li>
+the name of the noise introduction model.
+</li>
+<li>
+the parameters associated with the noise model.
+</li>
+<li>
+the number of noisy and clean samples in the dataset.
+</li>
+<li>
+the number of noisy samples per class/attribute.
+</li>
+<li>
+the number of clean samples per class/attribute.
+</li>
+<li>
+the indices of the noisy samples (if <code>showid = TRUE</code>).
+</li>
+</ul>
+</p>
+<p style="text-align:justify;">
+Finally, the <code>plot</code> function displays a representation of the
+dataset contained in an object of class <code>ndmodel</code> after the
+application of a noise introduction model.
+</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(outdef)</span></code></pre></div>
+<img src="data:image/png;base64,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" /><!-- -->
+<p style="text-align:justify;">
+This function performs a two-dimensional representation using the
+<strong>ggplot2</strong> package of the dataset contained in the object
+<em>x</em> of class <code>ndmodel</code>. Each of the classes in the
+dataset (available in <code>x$ynoise</code>) is represented by a
+different color.
+</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
